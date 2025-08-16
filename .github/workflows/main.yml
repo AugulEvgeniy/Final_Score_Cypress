@@ -55,6 +55,10 @@ jobs:
           
       - name: Create reports directory
         run: mkdir -p cypress/reports/chrome
+
+      - name: Install Cypress binary if not cached
+        if: steps.cypress-cache.outputs.cache-hit != 'true'
+        run: npx cypress install  
           
       - name: Cypress run (Chrome)
         run: |
