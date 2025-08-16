@@ -60,7 +60,7 @@ jobs:
         run: |
           npx cypress run \
             --browser chrome \
-            --spec "cypress/e2e/MotoGPRoulette/Burger_Menu/${{ steps.test-spec.outputs.SPEC }}" \
+            --spec "cypress/e2e/${{ steps.test-spec.outputs.SPEC }}" \
             --reporter mochawesome \
             --reporter-options "reportDir=cypress/reports/chrome,overwrite=false,html=false,json=true"
           
