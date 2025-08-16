@@ -63,6 +63,11 @@ jobs:
             --spec "cypress/e2e/${{ steps.test-spec.outputs.SPEC }}" \
             --reporter mochawesome \
             --reporter-options "reportDir=cypress/reports/chrome,overwrite=false,html=false,json=true"
+        env:
+          # Force color output in GitHub Actions
+          FORCE_COLOR: 1
+          # Show full test output
+          CYPRESS_VERBOSE: true    
           
       - name: Merge Mochawesome Reports
         if: always()
