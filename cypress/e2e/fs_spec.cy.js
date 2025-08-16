@@ -33,7 +33,7 @@ describe('template spec', () => {
     expect(marketButtons.FIRSTTEAMTOSCORE[1].text, 'first team to score market values correspond to the response').to.include(passThruData.markets[3].selections[1].price)
     expect(marketButtons.FIRSTTEAMTOSCORE[2].text, 'first team to score market values correspond to the response').to.include(passThruData.markets[3].selections[2].price)
   });
-  })
+  });
   
   cy.wait(300)
   cy.window().then((win) => {
