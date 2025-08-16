@@ -1,0 +1,85 @@
+name: Cypress Tests (Chrome Only)
+
+on: 
+  push:
+  workflow_dispatch:
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-24.04
+    env:
+      NODE_VERSION: 22
+      CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Cache npm dependencies
+        uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: |
+            ~/.npm
+            node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      
+      - name: Install dependencies
+        if: steps.npm-cache.outputs.cache-hit != 'true'
+        run: |
+          npm ci
+          npm install mochawesome mochawesome-merge mochawesome-report-generator
+      
+      - name: Cache Cypress
+        uses: actions/cache@v4
+        id: cypress-cache
+        with:
+          path: ~/.cache/Cypress
+          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
+      
+      - name: Determine test spec
+        id: test-spec
+        run: |
+          COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | tr '[:upper:]' '[:lower:]')
+          if [[ $COMMIT_MSG == *"test"* ]]; then
+            echo "SPEC=fs_spec.cy.js" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Create reports directory
+        run: mkdir -p cypress/reports/chrome
+          
+      - name: Cypress run (Chrome)
+        run: |
+          npx cypress run \
+            --browser chrome \
+            --spec "cypress/e2e/MotoGPRoulette/Burger_Menu/${{ steps.test-spec.outputs.SPEC }}" \
+            --reporter mochawesome \
+            --reporter-options "reportDir=cypress/reports/chrome,overwrite=false,html=false,json=true"
+          
+      - name: Merge Mochawesome Reports
+        if: always()
+        run: |
+          npx mochawesome-merge cypress/reports/chrome/*.json > cypress/reports/chrome/merged-report.json
+          
+      - name: Generate HTML Reports
+        if: always()
+        run: |
+          npx marge cypress/reports/chrome/merged-report.json \
+            --reportDir cypress/reports/chrome \
+            --reportFilename chrome-report.html \
+            --inline
+          
+      - name: Upload HTML Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-test-report
+          path: cypress/reports/chrome/chrome-report.html
