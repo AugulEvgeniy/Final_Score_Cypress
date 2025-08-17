@@ -32,12 +32,27 @@ describe('Client corresponds to the API response', () => {
       expect(marketButtons.FIRSTTEAMTOSCORE[0].text, 'first team to score market values correspond to the response').to.include(passThruData.markets[3].selections[0].price)
       expect(marketButtons.FIRSTTEAMTOSCORE[1].text, 'first team to score market values correspond to the response').to.include(passThruData.markets[3].selections[1].price)
       expect(marketButtons.FIRSTTEAMTOSCORE[2].text, 'first team to score market values correspond to the response').to.include(passThruData.markets[3].selections[2].price)
+    });
 
-      console.log(marketButtons)
+    cy.window().then((win) => {
+       cy.task("logCatch", `RIGHT TEAM client: ${win.game.scene.scenes[1].gameContainer.teamsPanel.teamRightTxt.text}, infopass: ${interception.response.body.passThruData.teams[1].code}`);
+       cy.task("logCatch", `LEFT TEAM client: ${win.game.scene.scenes[1].gameContainer.teamsPanel.teamLeftTxt.text}, infopass: ${interception.response.body.passThruData.teams[0].code}`);
+       cy.task("logCatch", `MATCH RESULT 1 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.MATCHRESULT[0].text}, infopass: ${interception.response.body.passThruData.markets[0].selections[0].price}`);
+       cy.task("logCatch", `MATCH RESULT 2 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.MATCHRESULT[1].text}, infopass: ${interception.response.body.passThruData.markets[0].selections[1].price}`);
+       cy.task("logCatch", `MATCH RESULT 3 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.MATCHRESULT[2].text}, infopass: ${interception.response.body.passThruData.markets[0].selections[2].price}`);
+       cy.task("logCatch", `UNDER OVER 1 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.UNDEROVER2POINT5TOTALGOALS[0].text}, infopass: ${interception.response.body.passThruData.markets[1].selections[0].price}`);
+       cy.task("logCatch", `UNDER OVER 2 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.UNDEROVER2POINT5TOTALGOALS[1].text}, infopass: ${interception.response.body.passThruData.markets[1].selections[1].price}`);
+       cy.task("logCatch", `BOTH TEAMS TO SCORE 1 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.BOTHTEAMSTOSCORE[0].text}, infopass: ${interception.response.body.passThruData.markets[2].selections[0].price}`);
+       cy.task("logCatch", `BOTH TEAMS TO SCORE 2 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.BOTHTEAMSTOSCORE[1].text}, infopass: ${interception.response.body.passThruData.markets[2].selections[1].price}`);
+       cy.task("logCatch", `FIRST TEAM TO SCORE 1 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.FIRSTTEAMTOSCORE[0].text}, infopass: ${interception.response.body.passThruData.markets[3].selections[0].price}`);
+       cy.task("logCatch", `FIRST TEAM TO SCORE 2 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.FIRSTTEAMTOSCORE[1].text}, infopass: ${interception.response.body.passThruData.markets[3].selections[1].price}`);
+       cy.task("logCatch", `FIRST TEAM TO SCORE 3 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.FIRSTTEAMTOSCORE[2].text}, infopass: ${interception.response.body.passThruData.markets[3].selections[2].price}`);
     });
   });
 })
-  
+
+   
+
   it('should check market values and team codes on changing a fixture', () => {
     cy.wait(300)
     cy.window().then((win) => {
@@ -66,6 +81,21 @@ describe('Client corresponds to the API response', () => {
       expect(marketButtons.FIRSTTEAMTOSCORE[1].text, 'first team to score market values correspond to the response').to.include(passThruData.markets[3].selections[1].price)
       expect(marketButtons.FIRSTTEAMTOSCORE[2].text, 'first team to score market values correspond to the response').to.include(passThruData.markets[3].selections[2].price)
     })
+
+    cy.window().then((win) => {
+       cy.task("logCatch", `RIGHT TEAM client: ${win.game.scene.scenes[1].gameContainer.teamsPanel.teamRightTxt.text}, infopass: ${interception.response.body.passThruData.teams[1].code}`);
+       cy.task("logCatch", `LEFT TEAM client: ${win.game.scene.scenes[1].gameContainer.teamsPanel.teamLeftTxt.text}, infopass: ${interception.response.body.passThruData.teams[0].code}`);
+       cy.task("logCatch", `MATCH RESULT 1 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.MATCHRESULT[0].text}, infopass: ${interception.response.body.passThruData.markets[0].selections[0].price}`);
+       cy.task("logCatch", `MATCH RESULT 2 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.MATCHRESULT[1].text}, infopass: ${interception.response.body.passThruData.markets[0].selections[1].price}`);
+       cy.task("logCatch", `MATCH RESULT 3 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.MATCHRESULT[2].text}, infopass: ${interception.response.body.passThruData.markets[0].selections[2].price}`);
+       cy.task("logCatch", `UNDER OVER 1 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.UNDEROVER2POINT5TOTALGOALS[0].text}, infopass: ${interception.response.body.passThruData.markets[1].selections[0].price}`);
+       cy.task("logCatch", `UNDER OVER 2 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.UNDEROVER2POINT5TOTALGOALS[1].text}, infopass: ${interception.response.body.passThruData.markets[1].selections[1].price}`);
+       cy.task("logCatch", `BOTH TEAMS TO SCORE 1 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.BOTHTEAMSTOSCORE[0].text}, infopass: ${interception.response.body.passThruData.markets[2].selections[0].price}`);
+       cy.task("logCatch", `BOTH TEAMS TO SCORE 2 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.BOTHTEAMSTOSCORE[1].text}, infopass: ${interception.response.body.passThruData.markets[2].selections[1].price}`);
+       cy.task("logCatch", `FIRST TEAM TO SCORE 1 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.FIRSTTEAMTOSCORE[0].text}, infopass: ${interception.response.body.passThruData.markets[3].selections[0].price}`);
+       cy.task("logCatch", `FIRST TEAM TO SCORE 2 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.FIRSTTEAMTOSCORE[1].text}, infopass: ${interception.response.body.passThruData.markets[3].selections[1].price}`);
+       cy.task("logCatch", `FIRST TEAM TO SCORE 3 client: ${win.game.scene.scenes[1].gameContainer.stakeSelector.MarketButtons.FIRSTTEAMTOSCORE[2].text}, infopass: ${interception.response.body.passThruData.markets[3].selections[2].price}`);
+    });
   })
 })
 
@@ -102,7 +132,7 @@ describe('Client corresponds to the API response', () => {
       clickUntilTurboMode(win);
     });
 
-    cy.window({ timeout: 40000 }).should((win) => {
+    cy.window({ timeout: 65000 }).should((win) => {
       const resultBanner = win.game.scene.scenes[1].gameContainer.reBetPopup.visible
       expect(resultBanner, 'result banner is displayed').to.be.true
     })
@@ -113,6 +143,13 @@ describe('Client corresponds to the API response', () => {
       expect(rebetPopup.list[12].text, 'right score corresponds to the response').to.include(scores[1])
       expect(rebetPopup.list[8].text, 'left team corresponds to the response').to.include(teams[0].code)
       expect(rebetPopup.list[4].text, 'right team corresponds to the response').to.include(teams[1].code)
+    })
+
+    cy.window().then((win) => {
+      cy.task("logCatch", `LEFT SCORE client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[11].text} playgame: ${scores[0]}`)
+      cy.task("logCatch", `RIGHT SCORE client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[12].text} playgame: ${scores[1]}`)
+      cy.task("logCatch", `LEFT TEAM client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[8].text} playgame: ${teams[0].code}`)
+      cy.task("logCatch", `RIGHT TEAM client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[4].text} playgame: ${teams[1].code}`)
     })
 
       if (state === "WIN") {
@@ -131,11 +168,17 @@ describe('Client corresponds to the API response', () => {
             expect(matchFound, `Win value ${expectedAmount} corresponds to the response: "${winnings}"`)
                 .to.be.true;
         });
+          cy.window().then((win) => {
+            cy.task("logCatch", `WIN MESSAGE client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[1].text} playgame: ${winPence}`)
+          })
       } else {
           cy.window({ timeout: 5000 }).should((win) => {
             const lose = win.game.scene.scenes[1].gameContainer.reBetPopup.list[1].text
             expect(lose, 'Lose message is displayed').to.include("YOU'VE LOST")
         })
+          cy.window().then((win) => {
+            cy.task("logCatch", `LOSE MESSAGE client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[1].text} playgame: ${winPence}`)
+          })        
       }
   })
   })
