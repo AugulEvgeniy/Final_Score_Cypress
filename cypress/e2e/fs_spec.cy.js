@@ -132,7 +132,39 @@ describe('Client corresponds to the API response', () => {
       clickUntilTurboMode(win);
     });
 
-    cy.window({ timeout: 65000 }).should((win) => {
+    cy.window({ timeout: 20000 }).should((win) => {
+      const scoreboard = win.game.scene.scenes[1].gameContainer.videoPopup.scoreboard
+      expect(scoreboard.list[19].text, 'left score is 0 at the start').to.equal("0")
+      expect(scoreboard.list[20].text, 'right score is 0 at the start').to.equal("0")
+    })
+
+    cy.window().then((win) => {
+      cy.task("logCatch", `LEFT SCORE is 0 at the start: ${win.game.scene.scenes[1].gameContainer.videoPopup.scoreboard.list[19].text}`)
+      cy.task("logCatch", `RIGHT SCORE is 0 at the start: ${win.game.scene.scenes[1].gameContainer.videoPopup.scoreboard.list[20].text}`)
+    })
+
+    cy.window({ timeout: 50000 }).should((win) => {
+      const videoCounter = win.game.scene.scenes[1].gameContainer.videoPopup.scoreboard.list[24].text
+      expect(videoCounter, '6th clip starts').to.include("06/06")
+    })
+
+    cy.window({ timeout: 20000 }).should((win) => {
+      const winLose = win.game.scene.scenes[1].gameContainer.videoPopup.winImageText.visible
+      expect(winLose, '6th clip result is displayed').to.be.true
+    })
+
+    cy.window({ timeout: 20000 }).should((win) => {
+      const scoreboard = win.game.scene.scenes[1].gameContainer.videoPopup.scoreboard
+      expect(scoreboard.list[19].text, 'left score on the bottom panel corresponds to the response').to.include(scores[0])
+      expect(scoreboard.list[20].text, 'right score on the bottom panel corresponds to the response').to.include(scores[1])
+    })
+
+    cy.window().then((win) => {
+      cy.task("logCatch", `LEFT SCORE (BOTTOM PANEL) client: ${win.game.scene.scenes[1].gameContainer.videoPopup.scoreboard.list[19].text} playgame: ${scores[0]}`)
+      cy.task("logCatch", `RIGHT SCORE (BOTTOM PANEL) client: ${win.game.scene.scenes[1].gameContainer.videoPopup.scoreboard.list[20].text} playgame: ${scores[1]}`)
+    })
+
+    cy.window({ timeout: 40000 }).should((win) => {
       const resultBanner = win.game.scene.scenes[1].gameContainer.reBetPopup.visible
       expect(resultBanner, 'result banner is displayed').to.be.true
     })
@@ -146,8 +178,8 @@ describe('Client corresponds to the API response', () => {
     })
 
     cy.window().then((win) => {
-      cy.task("logCatch", `LEFT SCORE client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[11].text} playgame: ${scores[0]}`)
-      cy.task("logCatch", `RIGHT SCORE client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[12].text} playgame: ${scores[1]}`)
+      cy.task("logCatch", `LEFT SCORE (BANNER) client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[11].text} playgame: ${scores[0]}`)
+      cy.task("logCatch", `RIGHT SCORE (BANNER) client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[12].text} playgame: ${scores[1]}`)
       cy.task("logCatch", `LEFT TEAM client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[8].text} playgame: ${teams[0].code}`)
       cy.task("logCatch", `RIGHT TEAM client: ${win.game.scene.scenes[1].gameContainer.reBetPopup.list[4].text} playgame: ${teams[1].code}`)
     })
