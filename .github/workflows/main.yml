@@ -1,94 +1,120 @@
-name: Cypress Tests (Chrome Only)
-
-on: 
-  push:
-  workflow_dispatch:
+name: Cypress Tests (Commit Message Triggers)
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [master]
 
 jobs:
   cypress-run:
     runs-on: ubuntu-24.04
+    continue-on-error: true
     env:
       NODE_VERSION: 22
       CYPRESS_CACHE_FOLDER: ~/.cache/Cypress
-
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-      
+        with:
+          fetch-depth: 0
+      - name: Init submodules
+        run: git submodule update --init --recursive --remote
+      - name: Check for [test] in commit messages
+        id: check-commits
+        run: |
+          COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+          COMMIT_MESSAGE=$(git log -1 --pretty=%B $COMMIT_SHA)
+          echo "Latest commit message: $COMMIT_MESSAGE"
+          if echo "$COMMIT_MESSAGE" | grep -qi "\[test\]"; then
+            echo "has_test_tag=true" >> $GITHUB_OUTPUT
+            echo "✅ [test] tag found in commit message"
+          else
+            echo "has_test_tag=false" >> $GITHUB_OUTPUT
+            echo "❌ No [test] tag found in commit message. Skipping tests."
+            exit 0
+          fi
       - name: Setup Node.js
+        if: steps.check-commits.outputs.has_test_tag == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-      
-      - name: Cache npm dependencies
+      - name: Cache node_modules and .npm
+        if: steps.check-commits.outputs.has_test_tag == 'true'
         uses: actions/cache@v4
         id: npm-cache
         with:
           path: |
             ~/.npm
-            node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      
-      - name: Install dependencies
+            external/node_modules
+          key: ${{ runner.os }}-node-modules-external
+      - name: Install dependencies (if needed)
         if: steps.npm-cache.outputs.cache-hit != 'true'
-        run: |
-          npm ci
-          npm install mochawesome mochawesome-merge mochawesome-report-generator
-      
-      - name: Cache Cypress
+        working-directory: external
+        run: npm install
+      - name: Install wait-on
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        run: npm install --no-save wait-on
+      - name: Cache Cypress binary
+        if: steps.check-commits.outputs.has_test_tag == 'true'
         uses: actions/cache@v4
         id: cypress-cache
         with:
           path: ~/.cache/Cypress
-          key: ${{ runner.os }}-cypress-${{ hashFiles('**/package-lock.json') }}
-      
-      - name: Determine test spec
-        id: test-spec
-        run: |
-          COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | tr '[:upper:]' '[:lower:]')
-          if [[ $COMMIT_MSG == *"test"* ]]; then
-            echo "SPEC=fs_spec.cy.js" >> $GITHUB_OUTPUT
-          fi
-          
+          key: ${{ runner.os }}-cypress-external
       - name: Create reports directory
-        run: mkdir -p cypress/reports/chrome
-
-      - name: Install Cypress binary if not cached
-        if: steps.cypress-cache.outputs.cache-hit != 'true'
-        run: npx cypress install  
-          
-      - name: Cypress run (Chrome)
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        run: mkdir -p external/reports/chrome
+      - name: Start local server
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        run: |
+          npm run build:test
+          npx serve -s dist -l 8000 &
+        continue-on-error: false
+      - name: Wait for local server
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        run: npx wait-on http://localhost:8000
+      - name: Check if server is up
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        run: |
+          curl -I http://localhost:8000 || (echo "Server not running!" && exit 1)
+      - name: Show test spec
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        working-directory: external
+        run: |
+          SPEC="cypress/e2e/fs_spec.cy.js"
+          ls -l "$SPEC" || echo "Test file not found: $SPEC"
+      - name: Run Cypress test test in Chrome
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        working-directory: external
+        env:
+          TERM: xterm
         run: |
           npx cypress run \
             --browser chrome \
-            --spec "cypress/e2e/${{ steps.test-spec.outputs.SPEC }}" \
+            --spec "cypress/e2e/fs_spec.cy.js" \
             --reporter mochawesome \
-            --reporter-options "reportDir=cypress/reports/chrome,overwrite=false,html=false,json=true"
-        env:
-          # Force color output in GitHub Actions
-          FORCE_COLOR: 1
-          # Show full test output
-          CYPRESS_VERBOSE: true    
-          
-      - name: Merge Mochawesome Reports
-        if: always()
+            --reporter-options "reportDir=reports/chrome,overwrite=false,html=false,json=true" \
+            --config video=true,chromeWebSecurity=false
+      - name: List generated reports
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        working-directory: external
         run: |
-          npx mochawesome-merge cypress/reports/chrome/*.json > cypress/reports/chrome/merged-report.json
-          
-      - name: Generate HTML Reports
-        if: always()
+          ls -l reports/chrome || echo "No reports directory found"
+          ls -l reports/chrome/*.json || echo "No JSON reports found"
+      - name: Generate HTML report
+        if: steps.check-commits.outputs.has_test_tag == 'true'
+        working-directory: external
         run: |
-          npx marge cypress/reports/chrome/merged-report.json \
-            --reportDir cypress/reports/chrome \
+          npx marge reports/chrome/mochawesome*.json \
+            --reportDir reports/chrome \
             --reportFilename chrome-report.html \
             --inline
-          
-      - name: Upload HTML Reports
-        if: always()
+      - name: Upload HTML Report
         uses: actions/upload-artifact@v4
         with:
           name: chrome-test-report
-          path: cypress/reports/chrome/chrome-report.html
+          path: external/reports/chrome/chrome-report.html
+      - name: Upload Test Video
+        uses: actions/upload-artifact@v4
+        with:
+          name: chrome-test-videos
+          path: external/cypress/videos
