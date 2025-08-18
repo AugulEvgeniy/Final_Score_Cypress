@@ -91,28 +91,7 @@ jobs:
           npx cypress run \
             --browser chrome \
             --spec "cypress/e2e/fs_spec.cy.js" \
-            --reporter mochawesome \
-            --reporter-options "reportDir=reports/chrome,overwrite=false,html=false,json=true" \
             --config video=true,chromeWebSecurity=false
-      - name: List generated reports
-        if: steps.check-commits.outputs.has_test_tag == 'true'
-        working-directory: external
-        run: |
-          ls -l reports/chrome || echo "No reports directory found"
-          ls -l reports/chrome/*.json || echo "No JSON reports found"
-      - name: Generate HTML report
-        if: steps.check-commits.outputs.has_test_tag == 'true'
-        working-directory: external
-        run: |
-          npx marge reports/chrome/mochawesome*.json \
-            --reportDir reports/chrome \
-            --reportFilename chrome-report.html \
-            --inline
-      - name: Upload HTML Report
-        uses: actions/upload-artifact@v4
-        with:
-          name: chrome-test-report
-          path: external/reports/chrome/chrome-report.html
       - name: Upload Test Video
         uses: actions/upload-artifact@v4
         with:
