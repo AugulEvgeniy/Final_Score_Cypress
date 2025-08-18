@@ -1,6 +1,6 @@
 describe('Client corresponds to the API response', () => {
   it('should check market values and team codes on launching the game', () => {
-    cy.visit('http://highlight.spinberry.com/applepen/HG_FinalScore/index.html?go=dev&serverAddress=https://riw-dev.olsworth.com&productId=finalscoreitaly85-dev&token=123456&currency=GBP&lang=en&testConfig=local&forceDevice=tablet&hideCurrency=false', { timeout: 30000} )
+    cy.visit('http://localhost:8000', { timeout: 30000} )
 
     cy.window({ timeout: 40000 }).should((win) => {
         const start_button = win.game.scene.scenes[2].container.list[0].list[6].list[0].visible
